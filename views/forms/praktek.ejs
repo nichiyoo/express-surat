@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+	</head>
+
+	<body
+		class="relative antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<!-- Navbar -->
+		<%- include('../partials/navbar') %>
+
+		<!-- Main -->
+		<main class="min-h-[90vh] py-16">
+			<div class="container px-4 mx-auto">
+				<!-- Header -->
+				<div class="grid items-start grid-cols-1 mb-8 lg:grid-cols-2">
+					<div class="flex flex-col order-2 space-y-2 lg:order-1">
+						<h3 class="mb-2 text-3xl title">Form Surat Izin Kerja Praktek</h3>
+						<p class="paragraph">
+							Permohonan surat untuk keperluan izin kerja praktek mahasiswa. Pengajuan dilakukan sebelum
+							pelaksanaan kerja praktek.
+						</p>
+					</div>
+
+					<div class="justify-end order-1 hidden lg:order-2 lg:flex">
+						<button class="button ghost" x-on:click="window.history.back()">
+							<i data-lucide="chevron-left" class="w-5 h-5"></i>
+							Kembali
+						</button>
+					</div>
+				</div>
+
+				<!-- Form Praktek -->
+				<form
+					enctype="multipart/form-data"
+					class="p-8 content"
+					x-data="{
+						file: '',
+						filename: '',
+						message: '',
+						errors: [],
+
+						init() {
+							this.nim = this.$refs.nim;
+							this.tipe = this.$refs.tipe;
+							this.username = this.$refs.username;
+							this.instansi = this.$refs.instansi;
+							this.proposal = this.$refs.proposal;
+							this.preview = this.$refs.preview;
+						},
+
+						openUpload() {
+							this.proposal.click();
+						},
+
+						changUpload() {
+							const file = this.proposal.files[0];
+							if (file.size >= 5000000) {
+								this.errors = [{
+									path: 'proposal',
+									msg: 'Ukuran file maksimal 5MB.',
+								}];
+								this.proposal.value = '';
+							} else {
+								this.file = URL.createObjectURL(file);
+								this.filename = file.name;
+								this.preview.src = this.file;
+							}
+						},
+
+						resetUpload() {
+							this.file = '';
+							this.filename = '';
+							this.preview.src = '';
+						},
+
+						handleSubmit(event) {
+							event.preventDefault();
+
+							const data = new FormData();
+							data.append('nim', this.nim.value);
+							data.append('tipe', this.tipe.value);
+							data.append('username', this.username.value);
+							data.append('instansi', this.instansi.value);
+							data.append('proposal', this.proposal.files[0]);
+
+							fetch('/api/forms/praktek', {
+								method: 'POST',
+								body: data,
+							})
+								.then(res => res.json())
+								.then(res => {
+									if (res.status !== 'success') {
+										this.errors = res?.result?.errors;
+										this.message = res.message;
+										setTimeout(() => {
+											this.errors = [];
+											this.message = '';
+										}, 5000);
+									} else {
+										this.errors = [];
+										this.message = '';
+										window.location.href = '/users/riwayat';
+									}
+								})
+								.catch(err => {
+									this.message = 'Gagal mengirim permohonan surat kerja praktek.';
+									setTimeout(() => {
+										this.message = '';
+									}, 5000);
+								});
+						},
+
+						getErrors(field) {
+							return this.errors?.filter((error) => error.path === field);
+						},
+					}"
+					x-on:submit.prevent="handleSubmit">
+					<p x-text="message" x-show="message" class="mb-4 text-sm text-red-700"></p>
+
+					<div class="mb-4">
+						<label for="username" class="block mb-2 text-sm">Username</label>
+						<input
+							readonly
+							disabled
+							required
+							x-ref="username"
+							type="text"
+							name="username"
+							id="username"
+							class="input-text"
+							placeholder="Username Mahasiswa"
+							value="<%= user.username %>" />
+						<template x-for="error in getErrors('username')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="nim" class="block mb-2 text-sm">NIM</label>
+						<input
+							readonly
+							disabled
+							x-ref="nim"
+							type="text"
+							name="nim"
+							id="nim"
+							class="input-text"
+							placeholder="NIM Mahasiswa"
+							value="<%= user.nim %>" />
+						<template x-for="error in getErrors('nim')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="tipe" class="block mb-2 text-sm">Tipe Surat</label>
+						<input
+							readonly
+							disabled
+							required
+							x-ref="tipe"
+							type="text"
+							name="tipe"
+							id="tipe"
+							class="input-text"
+							placeholder="Tipe Surat"
+							value="Praktek" />
+						<template x-for="error in getErrors('tipe')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="instansi" class="block mb-2 text-sm">Instansi</label>
+						<input
+							required
+							x-ref="instansi"
+							type="text"
+							name="instansi"
+							id="instansi"
+							class="input-text"
+							placeholder="Instansi Tujuan" />
+						<template x-for="error in getErrors('instansi')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-6">
+						<label for="proposal" class="block mb-2 text-sm">Proposal</label>
+						<input
+							x-ref="proposal"
+							type="file"
+							name="proposal"
+							id="proposal"
+							class="hidden"
+							x-on:change="changUpload"
+							accept="application/pdf" />
+						<div
+							class="flex items-center justify-center w-full h-[500px] overflow-hidden border border-zinc-200 rounded-md dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 mb-2"
+							x-on:click="openUpload">
+							<p
+								class="font-medium text-center select-none text-zinc-400 dark:text-zinc-600"
+								x-show="!file">
+								Upload proposal
+							</p>
+							<iframe x-show="file" class="w-full h-full" x-ref="preview" allowfullscreen> </iframe>
+						</div>
+						<template x-for="error in getErrors('proposal')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="flex justify-end space-x-2">
+						<button type="submit" class="button primary">Submit</button>
+						<button type="reset" class="button secondary" x-on:click="resetUpload">Reset</button>
+					</div>
+				</form>
+			</div>
+		</main>
+
+		<!-- Copyright -->
+		<%- include('../partials/footer') %>
+	</body>
+</html>

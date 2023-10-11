@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+	</head>
+
+	<body
+		class="relative antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<!-- Navbar -->
+		<%- include('../partials/navbar') %>
+
+		<!-- Main -->
+		<main class="min-h-[90vh] py-16">
+			<div class="container px-4 mx-auto">
+				<div class="grid items-end grid-cols-1 gap-4 mb-8 lg:grid-cols-2">
+					<div>
+						<h3 class="mb-2 text-3xl title">Layanan Akademik Mahasiswa</h3>
+						<p class="paragraph">
+							Aplikasi pengelolaan surat masuk dan surat keluar di lingkungan Universitas Andalas.
+							Aplikasi dibuat untuk mempermudah proses pengajuan surat oleh civitas akademika Universitas
+							Andalas.
+						</p>
+					</div>
+					<div class="justify-end hidden lg:flex">
+						<img src="/img/university.svg" alt="university" class="object-cover w-[300px] select-none" />
+					</div>
+				</div>
+				<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					<a href="<%= routes.praktek %>" class="p-8 content-hover">
+						<div class="flex items-start justify-between">
+							<h5 class="mb-3 text-lg title">Form Surat Izin Kerja Praktek</h5>
+							<i data-lucide="briefcase" class="w-6 h-6 text-unand-700"></i>
+						</div>
+						<p class="paragraph line-clamp-3">
+							Permohonan surat untuk keperluan izin kerja praktek mahasiswa. Pengajuan dilakukan sebelum
+							pelaksanaan kerja praktek.
+						</p>
+					</a>
+					<a href="<%= routes.skripsi %>" class="p-8 content-hover">
+						<div class="flex items-start justify-between">
+							<h5 class="mb-3 text-lg title">Form Surat Tugas Akhir</h5>
+							<i data-lucide="school" class="w-6 h-6 text-unand-700"></i>
+						</div>
+						<p class="paragraph line-clamp-3">
+							Pengajuan surat pengesahan tugas akhir mahasiswa. Surat akan diterbitkan setelah mendapatkan
+							persetujuan dari dosen pembimbing.
+						</p>
+					</a>
+
+					<a href="<%= routes.penelitian %>" class="p-8 content-hover">
+						<div class="flex items-start justify-between">
+							<h5 class="mb-3 text-lg title">Form Surat Izin Penelitian</h5>
+							<i data-lucide="microscope" class="w-6 h-6 text-unand-700"></i>
+						</div>
+						<p class="paragraph line-clamp-3">
+							Pengajuan surat untuk keperluan penelitian mahasiswa. Mahasiswa dapat mengajukan surat jika
+							telah mendapatkan persetujuan dari dosen wali.
+						</p>
+					</a>
+				</div>
+			</div>
+		</main>
+
+		<!-- Copyright -->
+		<%- include('../partials/footer') %>
+	</body>
+</html>

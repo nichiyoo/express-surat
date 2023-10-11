@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.primary {
+	@apply bg-unand-700 text-zinc-100 hover:bg-unand-800 hover:text-zinc-200 border border-unand-600;
+}
+
+.secondary {
+	@apply bg-transparent text-zinc-900 hover:bg-zinc-900/5 hover:text-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-100/5 dark:hover:text-zinc-200 border border-unand-600 dark:border-zinc-700;
+}
+
+.ghost {
+	@apply bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-300 hover:text-zinc-800 dark:hover:bg-zinc-600 dark:hover:text-zinc-200 border border-zinc-200 dark:border-zinc-700;
+}
+
+.danger {
+	@apply bg-red-500 text-white hover:bg-red-600;
+}
+
+.disable {
+	@apply bg-zinc-200 text-zinc-400 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-600 dark:border-zinc-700;
+}
+
+.button {
+	@apply h-8 px-3 flex items-center justify-center font-inter font-semibold text-sm rounded-md;
+}
+
+.square {
+	@apply h-8 w-8 relative rounded-md;
+}
+
+.icon {
+	@apply h-5 w-5 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+}
+
+.overlay {
+	@apply fixed inset-0 z-30 flex items-center justify-center bg-zinc-900/60 backdrop-blur-[2px];
+}
+
+.content {
+	@apply bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 cursor-pointer rounded-xl;
+}
+
+.content-hover {
+	@apply content hover:border-unand-500 dark:hover:border-zinc-500;
+}
+
+.title {
+	@apply text-zinc-900 dark:text-zinc-100 font-bold tracking-tight font-inter;
+}
+
+.paragraph {
+	@apply text-zinc-600 dark:text-zinc-400 leading-relaxed;
+}
+
+::selection {
+	@apply bg-unand-700 text-zinc-100;
+}
+
+::-moz-selection {
+	@apply bg-unand-700 text-zinc-100;
+}
+
+.input-text {
+	@apply w-full px-3 py-2 border rounded-md bg-zinc-100 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-unand-500 border-zinc-200 dark:border-zinc-700 focus:border-transparent disabled:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.input-checkbox {
+	@apply rounded form-checkbox text-unand-700 bg-zinc-100 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-unand-500 border-zinc-200 dark:border-zinc-700 focus:ring-offset-zinc-100 dark:focus:ring-offset-zinc-900;
+}
+
+.input-select {
+	@apply px-3 py-2 border rounded-md bg-zinc-100 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-unand-500 border-zinc-200 dark:border-zinc-700 focus:border-transparent disabled:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.input-button {
+	@apply w-full px-3 py-2 rounded-md;
+}
+
+.unand-filter {
+	@apply invert-[.32] sepia-[.84] saturate-[3.99] hue-rotate-[125deg] brightness-[.93] contrast-[.93];
+}

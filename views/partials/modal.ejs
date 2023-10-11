@@ -1,0 +1,35 @@
+<div x-data="{ modal: false }" x-on:keydown.escape="modal = false">
+	<div class="flex items-center mb-4 space-x-2">
+		<button type="button" x-on:click="modal = true" class="px-4 py-1.5 rounded-md primary">Button</button>
+		<button type="button" x-on:click="modal = true" class="px-4 py-1.5 rounded-md secondary">Button</button>
+		<button type="button" x-on:click="modal = true" class="px-4 py-1.5 rounded-md ghost">Button</button>
+		<button type="button" x-on:click="modal = true" class="px-4 py-1.5 rounded-md danger">Button</button>
+	</div>
+
+	<div class="overlay" x-show="modal">
+		<div
+			class="w-full max-w-[600px] p-10 mx-auto rounded-2xl content"
+			@click.away="modal = false"
+			x-transition:enter="motion-safe:ease-out duration-300"
+			x-transition:enter-start="opacity-0 scale-90"
+			x-transition:enter-end="opacity-100 scale-100">
+			<div class="flex justify-end mb-3">
+				<button type="button" class="rounded-md square ghost" @click="modal = false">
+					<i data-lucide="x" class="icon"></i>
+				</button>
+			</div>
+
+			<h1 class="mb-3 text-xl title">Hello World</h1>
+			<p class="mb-5 paragraph">
+				Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptates blanditiis est mollitia officia
+				repellendus laboriosam praesentium temporibus sint sed possimus voluptatum minus explicabo vitae
+				corporis maiores, sit totam, labore cupiditate.
+			</p>
+
+			<div class="flex items-center justify-start space-x-2">
+				<button type="button" class="px-4 py-1.5 rounded-md primary">Submit</button>
+				<button type="button" class="px-4 py-1.5 rounded-md secondary" x-on:click="modal = false">Close</button>
+			</div>
+		</div>
+	</div>
+</div>

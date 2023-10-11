@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+	</head>
+
+	<body
+		class="relative antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<!-- Navbar -->
+		<%- include('../partials/navbar') %>
+
+		<!-- Main -->
+		<main class="min-h-[90vh] py-16">
+			<div class="container px-4 mx-auto">
+				<!-- Header -->
+				<div class="grid items-start grid-cols-1 mb-8 lg:grid-cols-2">
+					<div class="flex flex-col order-2 space-y-2 lg:order-1">
+						<h3 class="mb-2 text-3xl title">Form Surat Izin Penelitian</h3>
+						<p class="paragraph">
+							Pengajuan surat untuk keperluan penelitian mahasiswa. Mahasiswa dapat mengajukan surat jika
+							telah mendapatkan persetujuan dari dosen wali.
+						</p>
+					</div>
+
+					<div class="justify-end order-1 hidden lg:order-2 lg:flex">
+						<button class="button ghost" x-on:click="window.history.back()">
+							<i data-lucide="chevron-left" class="w-5 h-5"></i>
+							Kembali
+						</button>
+					</div>
+				</div>
+
+				<!-- Form -->
+				<form
+					class="p-8 content"
+					x-data="{
+						errors : [],
+						message: '',
+
+						init () {
+							this.nim = this.$refs.nim;
+							this.tipe = this.$refs.tipe;
+							this.tujuan = this.$refs.tujuan;
+							this.subjek = this.$refs.subjek;
+							this.username = this.$refs.username;
+							this.instansi = this.$refs.instansi;
+						},
+
+						handleSubmit(event) {
+							event.preventDefault();
+
+							const data = {
+								nim: this.nim.value,
+								tipe: this.tipe.value,
+								tujuan: this.tujuan.value,
+								subjek: this.subjek.value,
+								username: this.username.value,
+								instansi: this.instansi.value,
+							};
+
+							fetch('/api/forms/penelitian', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify(data),
+							})
+								.then(res => res.json())
+								.then(res => {
+									if (res.status !== 'success') {
+										this.errors = res?.result?.errors;
+										this.message = res.message;
+										setTimeout(() => {
+											this.errors = [];
+											this.message = '';
+										}, 5000);
+									} else {
+										this.errors = [];
+										this.message = '';
+										window.location.href = '/users/riwayat';
+									}
+								})
+								.catch((err) => {
+									this.message = 'Gagal mengirim permohonan surat izin penelitian.';
+									setTimeout(() => {
+										this.message = '';
+									}, 5000);
+								});
+						},
+
+						getErrors(field) {
+							return this.errors?.filter((error) => error.path === field);
+						},
+					}"
+					x-on:submit.prevent="handleSubmit">
+					<p x-text="message" x-show="message" class="mb-4 text-sm text-red-700"></p>
+
+					<div class="mb-4">
+						<label for="username" class="block mb-2 text-sm">Username</label>
+						<input
+							readonly
+							disabled
+							required
+							x-ref="username"
+							type="text"
+							name="username"
+							id="username"
+							class="input-text"
+							placeholder="Username Mahasiswa"
+							value="<%= user.username %>" />
+						<template x-for="error in getErrors('username')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="nim" class="block mb-2 text-sm">NIM</label>
+						<input
+							readonly
+							disabled
+							required
+							x-ref="nim"
+							type="text"
+							name="nim"
+							id="nim"
+							class="input-text"
+							placeholder="NIM Mahasiswa"
+							value="<%= user.nim %>" />
+						<template x-for="error in getErrors('nim')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="tipe" class="block mb-2 text-sm">Tipe Surat</label>
+						<input
+							readonly
+							disabled
+							required
+							x-ref="tipe"
+							type="text"
+							name="tipe"
+							id="tipe"
+							class="input-text"
+							placeholder="Tipe Surat"
+							value="Penelitian" />
+						<template x-for="error in getErrors('tipe')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="subjek" class="block mb-2 text-sm">Mata Kuliah</label>
+						<input
+							required
+							x-ref="subjek"
+							type="text"
+							name="subjek"
+							id="subjek"
+							class="input-text"
+							placeholder="Mata Kuliah" />
+						<template x-for="error in getErrors('subjek')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="instansi" class="block mb-2 text-sm">Instansi</label>
+						<input
+							required
+							x-ref="instansi"
+							type="text"
+							name="instansi"
+							id="instansi"
+							class="input-text"
+							placeholder="Instansi Tujuan" />
+						<template x-for="error in getErrors('instansi')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-6">
+						<label for="tujuan" class="block mb-2 text-sm">Tujuan Surat</label>
+						<textarea
+							required
+							x-ref="tujuan"
+							rows="3"
+							type="text"
+							name="tujuan"
+							id="tujuan"
+							class="input-text"
+							placeholder="Tujuan Surat"></textarea>
+						<template x-for="error in getErrors('tujuan')" x-key="error">
+							<p class="text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="flex justify-end space-x-2">
+						<button type="submit" class="button primary">Submit</button>
+						<button type="reset" class="button secondary">Reset</button>
+					</div>
+				</form>
+			</div>
+		</main>
+
+		<!-- Copyright -->
+		<%- include('../partials/footer') %>
+	</body>
+</html>

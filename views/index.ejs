@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+	</head>
+
+	<body class="relative antialiased font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<!-- navbar -->
+		<nav class="font-inter" id="navbar">
+			<div class="container px-4 py-4 mx-auto">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center space-x-2">
+						<i data-lucide="graduation-cap" class="w-6 h-6"></i>
+						<a href="/" class="font-bold">Universitas Andalas</a>
+					</div>
+					<ul class="flex items-center space-x-3 text-sm">
+						<li><a href="/#navbar" class="hover:text-unand-700 dark:hover:text-unand-400">Home</a></li>
+						<li><a href="/#feature" class="hover:text-unand-700 dark:hover:text-unand-400">Fitur</a></li>
+						<li><a href="/#about" class="hover:text-unand-700 dark:hover:text-unand-400">About</a></li>
+						<button class="square primary" x-on:click="toggle">
+							<i data-lucide="sun" class="icon" x-show="theme === 'dark'"></i>
+							<i data-lucide="moon" class="icon" x-show="theme === 'light'"></i>
+						</button>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<!-- hero -->
+		<main class="py-16" id="hero">
+			<div class="container px-4 mx-auto flex flex-col justify-center h-[500px] text-center">
+				<div class="flex flex-col items-center justify-center max-w-4xl mx-auto">
+					<h1
+						class="mb-4 text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-unand-400 to-unand-900 font-inter drop-shadow-2xl">
+						Sistem Informasi Persuratan Universitas Andalas
+					</h1>
+					<p class="max-w-2xl mb-5 paragraph">
+						Aplikasi pengelolaan surat masuk dan surat keluar di lingkungan Universitas Andalas. Aplikasi
+						dibuat untuk mempermudah proses pengajuan surat oleh civitas akademika Universitas Andalas.
+					</p>
+
+					<div class="flex items-center space-x-2" x-data="{ user: <%= JSON.stringify(user) %> }">
+						<% if (user) { %>
+						<a role="button" href="/users/dashboard" class="button primary">Dashboard</a>
+						<form
+							x-data="{
+								handleSubmit(event) {
+									event.preventDefault();
+									fetch('/api/users/logout', {
+										method: 'POST',
+										headers: {
+											'Content-Type': 'application/json',
+										},
+									})
+										.then((res) => res.json())
+										.then((res) => {
+											if (res.status !== 'success') console.error(res);
+											else window.location.href = '/';
+										})
+										.catch((err) => console.log(err));
+								},
+							}"
+							x-on:submit.prevent="handleSubmit">
+							<button type="submit" class="button secondary">Logout</button>
+						</form>
+						<% } else { %>
+						<a role="button" href="/auth/login" class="button primary">Login</a>
+						<a role="button" href="/auth/register" class="button secondary"> Register </a>
+						<% } %>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<section id="feature">
+			<div class="container px-4 py-16 mx-auto">
+				<h3 class="text-xl text-center title">Fitur Aplikasi</h3>
+				<p class="mb-8 text-center paragraph">
+					Beberapa fitur yang disediakan oleh aplikasi Sistem Informasi Persuratan Universitas Andalas.
+				</p>
+
+				<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+					<div class="p-8 text-center content">
+						<div class="flex items-center justify-center mb-3">
+							<i data-lucide="briefcase" class="w-8 h-8 text-unand-700 dark:text-zinc-50"></i>
+						</div>
+						<h5 class="mb-2 text-lg font-bold">Pengajuan Surat</h5>
+						<p class="paragraph line-clamp-3">
+							Mengajukan permohonan surat untuk kebutuhan civitas akademika Universitas Andalas dengan
+							mengisi form yang telah disediakan.
+						</p>
+					</div>
+					<div class="p-8 text-center content">
+						<div class="flex items-center justify-center mb-3">
+							<i data-lucide="table-properties" class="w-8 h-8 text-unand-700 dark:text-zinc-50"></i>
+						</div>
+						<h5 class="mb-2 text-lg font-bold">Monitoring Surat</h5>
+						<p class="paragraph line-clamp-3">
+							Memantau status surat dan melihat riwayat pengajuan surat, sehinnga memudahkan civitas
+							akademika Universitas Andalas dalam memantau status surat yang telah diajukan.
+						</p>
+					</div>
+					<div class="p-8 text-center content">
+						<div class="flex items-center justify-center mb-3">
+							<i data-lucide="heart-handshake" class="w-8 h-8 text-unand-700 dark:text-zinc-50"></i>
+						</div>
+						<h5 class="mb-2 text-lg font-bold">Pengesahan Surat</h5>
+						<p class="paragraph line-clamp-3">
+							Permohonan surat yang telah diajukan oleh civitas akademika Universitas Andalas dapat
+							disetujui atau ditolak oleh pihak yang berwenang.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="about">
+			<div class="container px-4 py-16 mx-auto">
+				<h3 class="text-xl text-center title">Tentang Aplikasi</h3>
+				<p class="mb-8 text-center paragraph">
+					Aplikasi Sistem Informasi Persuratan Universitas Andalas dibuat untuk mempermudah proses pengajuan
+					surat oleh civitas akademika Universitas Andalas. <br />
+					Aplikasi memiliki beberapa fitur pengajuan surat, monitoring surat, dan pengesahan surat.
+				</p>
+				<div
+					class="w-2/3 mx-auto overflow-hidden border shadow-sm rounded-xl border-zinc-300 dark:border-zinc-700">
+					<img src="/img/capture.jpeg" alt="Table" class="object-cover h-full select-none" />
+				</div>
+			</div>
+		</section>
+
+		<!-- copyrigth -->
+		<%- include('partials/footer') %>
+	</body>
+</html>

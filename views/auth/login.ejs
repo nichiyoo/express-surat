@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+
+		<!-- IMaskJS -->
+		<script src="https://unpkg.com/imask"></script>
+	</head>
+
+	<body class="antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<main>
+			<div class="container flex flex-col items-center justify-center h-screen px-2 mx-auto">
+				<!-- brand -->
+				<div class="flex items-center justify-between w-full max-w-xl mb-5 space-x-2">
+					<div class="flex items-center space-x-2">
+						<i data-lucide="graduation-cap" class="w-6 h-6"></i>
+						<a href="/" class="font-bold">Universitas Andalas</a>
+					</div>
+
+					<button class="square ghost" x-on:click="toggle">
+						<i data-lucide="sun" class="icon" x-show="theme === 'dark'"></i>
+						<i data-lucide="moon" class="icon" x-show="theme === 'light'"></i>
+					</button>
+				</div>
+
+				<!-- form -->
+				<div class="w-full max-w-xl p-8 content">
+					<h2 class="text-2xl title">Login</h2>
+					<p class="mb-5 paragraph">Silahkan login untuk mengakses aplikasi.</p>
+					<form
+						x-data="{
+							errors: [],
+							message: '',
+
+							init() {
+								this.password = this.$refs.password;
+								this.username = this.$refs.username;
+								IMask(this.username, {mask: /^[a-zA-Z0-9]*$/});
+							},
+
+							handleSubmit(event) {
+								event.preventDefault();
+
+								const data = {
+									username: this.username.value,
+									password: this.password.value,
+								};
+
+								fetch('/api/users/login', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json',
+									},
+									body: JSON.stringify(data),
+								})
+									.then(res => res.json())
+									.then(res => {
+										if (res.status !== 'success') {
+											this.errors = res?.result?.errors;
+											this.message = res.message;
+											setTimeout(() => {
+												this.errors = [];
+												this.message = '';
+											}, 5000);
+										} else {
+											this.errors = [];
+											this.message = '';
+											window.location.href = '/';
+										}
+									})
+									.catch(err => {
+										this.message = 'Gagal mengautentikasi pengguna.';
+										setTimeout(() => {
+											this.message = '';
+										}, 5000);
+									});
+							},
+
+							getErrors(field) {
+								return this.errors?.filter((error) => error.path === field);
+							},
+						}"
+						x-on:submit.prevent="handleSubmit">
+						<p x-text="message" x-show="message" class="mb-4 text-sm text-red-500"></p>
+
+						<div class="mb-4">
+							<label for="username" class="block mb-2 text-sm font-medium">Username</label>
+							<input
+								required
+								x-ref="username"
+								type="text"
+								name="username"
+								id="username"
+								class="input-text"
+								placeholder="Masukkan Username" />
+							<template x-for="error in getErrors('username')" x-key="error">
+								<p class="text-sm text-red-500" x-text="error.msg"></p>
+							</template>
+						</div>
+
+						<div class="mb-4">
+							<label for="password" class="block mb-2 text-sm font-medium">Password</label>
+							<input
+								required
+								x-ref="password"
+								type="password"
+								name="password"
+								id="password"
+								class="input-text"
+								placeholder="Masukkan password" />
+							<template x-for="error in getErrors('password')" x-key="error">
+								<p class="text-sm text-red-500" x-text="error.msg"></p>
+							</template>
+						</div>
+
+						<div class="flex items-center justify-between mb-6">
+							<label for="remember" class="flex items-center space-x-2">
+								<input type="checkbox" name="remember" id="remember" class="input-checkbox" />
+								<span class="text-sm">Ingat saya</span>
+							</label>
+						</div>
+
+						<button type="submit" class="mb-3 input-button primary">Login</button>
+						<p class="text-sm text-center">
+							Belum punya akun?
+							<a href="/auth/register" class="font-semibold text-unand-700 dark:text-zinc-50">Daftar</a>
+						</p>
+					</form>
+				</div>
+			</div>
+		</main>
+
+		<!-- footer -->
+		<%- include('footer') %>
+
+		<script>
+			const form = document.querySelector('form');
+			form.addEventListener('submit', (event) => {
+				event.preventDefault();
+
+				const data = {
+					username: form.username.value,
+					password: form.password.value,
+					remember: form.remember.checked,
+				};
+
+				fetch('/api/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(data),
+				})
+					.then((res) => res.json())
+					.then((data) => {
+						if (data.error) alert(data.error);
+						else alert(data.message);
+					})
+					.catch((err) => console.log(err));
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+	</head>
+
+	<body class="antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<main class="py-16">
+			<div class="container px-4 mx-auto flex flex-col justify-center h-[80vh]">
+				<div class="flex flex-col items-center justify-center max-w-4xl mx-auto">
+					<img src="/img/404.svg" alt="404" class="w-[600px] select-none mb-8" />
+					<div class="flex flex-col items-center justify-center gap-4 lg:flex-row">
+						<h1 class="mb-3 font-extrabold text-8xl font-inter"><%= error.status %></h1>
+						<p class="mb-5 text-center paragraph lg:text-start">
+							Oops! Halaman yang kamu cari tidak ditemukan. <br />
+							Silahkan kembali ke halaman utama. <br />
+							Jika kamu merasa ini adalah kesalahan, silahkan hubungi admin.
+						</p>
+					</div>
+					<button class="text-sm button primary" x-on:click="window.history.back()">Kembali</button>
+				</div>
+			</div>
+		</main>
+
+		<!-- Copyroght -->
+		<%- include('partials/footer') %>
+	</body>
+</html>

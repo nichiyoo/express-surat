@@ -1,0 +1,27 @@
+<nav id="navbar" class="bg-transparent font-inter">
+	<div class="container px-4 py-4 mx-auto">
+		<div class="flex items-center justify-between">
+			<div class="flex items-center space-x-2">
+				<i data-lucide="graduation-cap" class="w-6 h-6"></i>
+				<a href="/" class="font-bold">Universitas Andalas</a>
+			</div>
+			<div class="flex items-center space-x-4 text-sm">
+				<ul class="items-center hidden space-x-4 lg:flex">
+					<li><a class="hover:text-unand-700" href="/users/dashboard">Layanan</a></li>
+					<li>
+						<a
+							class="hover:text-unand-700"
+							href="<% if (user.role === 'Admin') { %>/admins/riwayat<% } else { %>/users/riwayat<% } %>">
+							Riwayat
+						</a>
+					</li>
+				</ul>
+				<%- include('dropdown') %>
+				<button class="square primary" x-on:click="toggle">
+					<i data-lucide="sun" class="icon" x-show="theme === 'dark'"></i>
+					<i data-lucide="moon" class="icon" x-show="theme === 'light'"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+</nav>

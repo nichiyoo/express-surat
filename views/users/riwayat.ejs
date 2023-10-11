@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script defer src="/js/index.js"></script>
+	</head>
+
+	<body
+		class="relative antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<!-- Navbar -->
+		<%- include('../partials/navbar') %>
+
+		<!-- Main -->
+		<main class="min-h-[90vh] py-16">
+			<div class="container px-4 mx-auto">
+				<div
+					x-data="{
+						current: 1,
+						limit: 10,
+						total: 1,
+						pages: [],
+						forms: [],
+						message: '',
+
+						init() {
+							// validate query params
+							try {
+								this.current = Math.abs(new URLSearchParams(window.location.search).get('page')) || 1;
+								this.limit = Math.abs(new URLSearchParams(window.location.search).get('limit')) || 10;
+							} catch (err) {
+								this.current = 1;
+								this.limit = 10;
+							}
+
+							fetch(`/api/forms/riwayat?page=${this.current}&limit=${this.limit}`)
+								.then(res => res.json())
+								.then(res => {
+									console.log(res);
+									if (res.status !== 'success') {
+										this.message = res.message;
+										setTimeout(() => this.message = '', 3000);
+									} else {
+										const { current, total, limit, forms, count } = res.data;
+										this.current = current;
+										this.total = total;
+										this.limit = limit;
+										this.count = count; // total data
+										this.forms = forms;
+									}
+								})
+								.catch(err => {
+									this.message = err.message;
+									setTimeout(() => this.message = '', 3000);
+								});
+						},
+
+						get pages() {
+							if (this.total <= 5) return Array.from({ length: this.total }, (_, i) => i + 1);
+							if (this.current <= 3)  return [1, 2, 3, 4, 5];
+							if (this.current > this.total - 3) {
+								return [
+									this.total - 4,
+									this.total - 3,
+									this.total - 2,
+									this.total - 1,
+									this.total,
+								];
+							}
+							return [this.current - 2, this.current - 1, this.current, this.current + 1, this.current + 2];
+						},
+
+						get information() {
+							return `Menampilkan halaman ${this.current} dari ${this.total} halaman`;
+						},
+
+						prev() {
+							if (this.current > 1) {
+								this.current--;
+								this.update();
+							}
+						},
+
+						next() {
+							if (this.current < this.total) {
+								this.current++;
+								this.update();
+							}
+						},
+
+						goto(page) {
+							this.current = page;
+							this.update();
+						},
+
+						update() {
+							window.history.pushState({}, '', `?page=${this.current}&limit=${this.limit}`);
+
+							fetch(`/api/forms/riwayat?page=${this.current}&limit=${this.limit}`)
+								.then(res => res.json())
+								.then(res => {
+									if (res.status !== 'success') {
+										this.message = res.message;
+										setTimeout(() => this.message = '', 3000);
+									} else {
+										const { forms } = res.data;
+										this.forms = forms;
+									}
+								})
+								.catch(err => {
+									this.message = err.message;
+									setTimeout(() => this.message = '', 3000);
+								});
+						},
+
+						download(id) {
+							const form = this.forms.find(form => form.id === id);
+
+							fetch(`/api/forms/download/${id}/surat`)
+								.then(res => res.blob())
+								.then(blob => {
+									const url = window.URL.createObjectURL(blob);
+									const a = document.createElement('a');
+									a.href = url;
+									a.download = `Surat ${form.tipe} ${form.user.username}.pdf`;
+									a.click();
+								})
+								.catch(err => {
+									this.message = err.message;
+									setTimeout(() => this.message = '', 3000);
+								});
+						},
+					}"
+					x-cloak>
+					<!-- Title -->
+					<h3 class="mb-2 text-3xl title">Riwayat Pengajuan Surat</h3>
+					<p class="max-w-3xl mb-8 paragraph">
+						Berikut adalah riwayat pengajuan surat yang telah dijukan, surat dapat dicetak apabila telah
+						disetujui dan diterbitkan oleh admin.
+					</p>
+
+					<!-- Message -->
+					<p x-text="message" x-show="message" class="mb-4 text-sm text-red-500"></p>
+
+					<div
+						id="table"
+						class="w-full mb-8 overflow-hidden overflow-x-scroll border rounded-xl bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+						<table class="w-full border-collapse table-fixed">
+							<thead class="border-b border-zinc-200 dark:border-zinc-800">
+								<tr class="bg-zinc-100 dark:bg-zinc-800">
+									<th class="w-[50px] px-4 py-2 text-center">No</th>
+									<th class="w-[200px] px-4 py-2 text-start">Jenis Surat</th>
+									<th class="w-[200px] px-4 py-2 text-start">Tanggal Pengajuan</th>
+									<th class="w-[200px] px-4 py-2 text-start">Instansi</th>
+									<th class="w-[200px] px-4 py-2 text-center">Status</th>
+									<th class="w-[200px] px-4 py-2 text-center">Tindakan</th>
+								</tr>
+							</thead>
+
+							<!-- Empty State -->
+							<template x-if="forms.length === 0">
+								<tbody>
+									<tr class="text-sm border-b border-zinc-200 dark:border-zinc-800">
+										<td class="px-4 py-2 text-center" colspan="6">Tidak ada data</td>
+									</tr>
+								</tbody>
+							</template>
+
+							<!-- Not Empty State -->
+							<template x-for="(form, index) in forms" x-key="form.id">
+								<tr class="text-sm border-b border-zinc-200 dark:border-zinc-800">
+									<td class="px-4 py-2 text-center">
+										<span x-text="index + 1 + (current - 1) * limit"></span>
+									</td>
+									<td class="px-4 py-2">
+										<span
+											x-text="{
+											Praktek: 'Surat Izin Kerja Praktek',
+											Skripsi: 'Surat Izin Tugas Akhir',
+											Penelitian: 'Surat Izin Penelitian',
+										}[form.tipe]"></span>
+									</td>
+									<td class="px-4 py-2">
+										<time
+											x-text="new Date(form.createdAt).toLocaleDateString('id-ID', {
+											weekday: 'long',
+											day: 'numeric',
+											month: 'long',
+											year: 'numeric',
+										})"></time>
+									</td>
+									<td class="px-4 py-2">
+										<span x-text="form.instansi"></span>
+									</td>
+									<td class="px-4 py-2 text-center">
+										<span
+											x-text="form.status"
+											class="inline-block w-24 px-2 py-1 text-sm font-medium rounded-full"
+											x-bind:class="{
+											'bg-blue-200 text-blue-800': form.status === 'Menunggu',
+											'bg-unand-200 text-unand-700': form.status === 'Diterima',
+											'bg-red-200 text-red-800': form.status === 'Ditolak',
+										}"></span>
+									</td>
+									<td class="px-4 py-2 text-center">
+										<div class="flex justify-center space-x-2">
+											<button
+												class="button ghost"
+												x-on:click="download(form.id)"
+												x-bind:disabled="form.status !== 'Diterima'"
+												x-show="form.status === 'Diterima'">
+												cetak
+											</button>
+										</div>
+									</td>
+								</tr>
+							</template>
+						</table>
+					</div>
+
+					<!-- Pagination -->
+					<div class="flex items-center justify-end mb-8 lg:justify-between">
+						<span class="hidden text-sm font-medium lg:block" x-text="information"></span>
+
+						<div class="flex items-center justify-end space-x-2">
+							<button
+								class="button"
+								x-on:click="prev()"
+								x-bind:disabled="current === 1"
+								x-bind:class="{ 'disable': current === 1, 'primary': current !== 1 }">
+								<i data-lucide="chevron-left" class="w-4 h-4"></i>
+							</button>
+							<template x-for="page in pages" x-bind:key="page">
+								<button
+									x-text="page"
+									class="button"
+									x-on:click="goto(page)"
+									x-bind:disabled="current === page"
+									x-bind:class="{ 'primary': current === page, 'ghost': current !== page }"></button>
+							</template>
+							<button
+								class="button"
+								x-on:click="next()"
+								x-bind:disabled="current === total"
+								x-bind:class="{ 'disable': current === total, 'primary': current !== total }">
+								<i data-lucide="chevron-right" class="w-4 h-4"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<!-- Copyright -->
+		<%- include('../partials/footer') %>
+	</body>
+</html>

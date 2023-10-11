@@ -1,0 +1,67 @@
+<div x-data="{ expand: false }" x-on:click.outside="expand = false" class="relative">
+	<button x-on:click="expand = !expand" class="flex items-center hover:text-unand-700">
+		<%= user.username %>
+		<i
+			class="w-4 h-4 ml-2 transition-transform duration-300"
+			data-lucide="chevron-down"
+			x-bind:class="{ 'rotate-180': expand }">
+		</i>
+	</button>
+	<ul
+		x-show="expand"
+		x-transition.opacity
+		class="absolute right-0 p-1 mt-6 rounded-lg select-none min-w-[180px] top-full content">
+		<li>
+			<a
+				href="/users/profile"
+				class="flex items-center w-full p-2 space-x-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900">
+				<i data-lucide="user" class="w-4 h-4 text-unand-700 dark:text-zinc-50"></i>
+				<span class="text-sm">Profile</span>
+			</a>
+		</li>
+		<li class="block lg:hidden">
+			<a
+				href="/users/dashboard"
+				class="flex items-center w-full p-2 space-x-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900">
+				<i data-lucide="home" class="w-4 h-4 text-unand-700 dark:text-zinc-50"></i>
+				<span class="text-sm">Dashboard</span>
+			</a>
+		</li>
+		<li class="block lg:hidden">
+			<a
+				href="<% if (user.role === 'Admin') { %>/admins/riwayat<% } else { %>/users/riwayat<% } %>"
+				class="flex items-center w-full p-2 space-x-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900">
+				<i data-lucide="mail" class="w-4 h-4 text-unand-700 dark:text-zinc-50"></i>
+				<span class="text-sm">Riwayat</span>
+			</a>
+		</li>
+		<li>
+			<form
+				x-data="{
+					handleSubmit(event) {
+						event.preventDefault();
+						fetch('/api/users/logout', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+						})
+							.then((res) => res.json())
+							.then((res) => {
+								if (res.status !== 'success') console.error(res);
+								else window.location.href = '/';
+							})
+							.catch((err) => console.log(err));
+					},
+				}"
+				x-on:submit.prevent="handleSubmit">
+				<button
+					type="submit"
+					class="flex items-center w-full p-2 space-x-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900">
+					<i data-lucide="log-out" class="w-4 h-4 text-unand-700 dark:text-zinc-50"></i>
+					<span class="text-sm">Logout</span>
+				</button>
+			</form>
+		</li>
+	</ul>
+</div>

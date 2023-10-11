@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html
+	lang="en"
+	x-data="{
+		theme: localStorage.getItem('theme') || localStorage.setItem('theme', 'system'),
+		toggle() {
+			this.theme = this.theme === 'dark' ? 'light' : 'dark';
+			localStorage.theme = this.theme;
+		},
+	}"
+	x-bind:class="{ 'dark': theme === 'dark' }"
+	x-cloak>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+
+		<!-- TailwindCSS -->
+		<link rel="stylesheet" href="/css/style.css" />
+
+		<!--  Lucide Icons -->
+		<script src="https://unpkg.com/lucide@latest" defer></script>
+
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="/js/index.js" defer></script>
+
+		<!-- IMaskJS -->
+		<script src="https://unpkg.com/imask"></script>
+	</head>
+
+	<body
+		class="relative antialiased scroll-smooth font-nunito bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+		<!-- Navbar -->
+		<%- include('../partials/navbar') %>
+
+		<!-- Main -->
+		<main class="min-h-[90vh] py-16">
+			<div class="container px-4 mx-auto">
+				<!-- Header -->
+				<div class="grid items-start grid-cols-1 mb-8 lg:grid-cols-2">
+					<div class="flex flex-col order-2 space-y-2 lg:order-1">
+						<h3 class="mb-2 text-3xl title">Profile Mahasiswa</h3>
+						<p class="paragraph">
+							Silahkan isi form dibawah ini untuk mengubah data diri anda. Pastikan data yang anda
+							masukkan benar dan valid agar tidak terjadi kesalahan dalam proses pengajuan surat.
+						</p>
+					</div>
+
+					<div class="justify-end order-1 hidden lg:order-2 lg:flex">
+						<button class="button ghost" x-on:click="window.history.back()">
+							<i data-lucide="chevron-left" class="w-5 h-5"></i>
+							Kembali
+						</button>
+					</div>
+				</div>
+
+				<form
+					class="p-8 content"
+					x-data="{
+						errors: [],
+						message: '',
+
+						init() {
+							this.nim = this.$refs.nim;
+							this.telepon = this.$refs.telepon;
+							this.password = this.$refs.password;
+							this.username = this.$refs.username;
+							this.newPassword = this.$refs.newPassword;
+
+							IMask(this.nim, {mask: '00000000'});
+							IMask(this.username, {mask: /^[a-zA-Z0-9]*$/});
+							IMask(this.telepon, {mask: '+62 000 0000 00000'});
+						},
+
+						handleSubmit(event) {
+							event.preventDefault();
+
+							const data = {
+								nim: this.nim.value,
+								telepon: this.telepon.value.replace(/\D/g, ''),
+								username: this.username.value.replace(/\s/g, ''),
+								password: this.password.value,
+								newPassword: this.newPassword.value === '' ? null : this.newPassword.value,
+							};
+
+							fetch('/api/users/update', {
+								method: 'PUT',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify(data),
+							})
+								.then(res => res.json())
+								.then(res => {
+									if (res.status !== 'success') {
+										this.errors = res?.result?.errors;
+										this.message = res.message;
+										setTimeout(() => {
+											this.errors = [];
+											this.message = '';
+										}, 5000);
+									} else {
+										this.errors = [];
+										this.message = '';
+										window.location.href = '/users/dashboard';
+									}
+								})
+								.catch(err => {
+									this.message = 'Gagal mengubah data pengguna.';
+									setTimeout(() => {
+										this.message = '';
+									}, 5000);
+								});
+						},
+
+						getErrors(field) {
+							return this.errors?.filter((error) => error.path === field);
+						},
+					}"
+					x-on:submit.prevent="handleSubmit">
+					<p x-text="message" x-show="message" class="mb-4 text-sm text-red-500"></p>
+
+					<div class="mb-4">
+						<label for="username" class="block mb-2 text-sm font-medium">Username</label>
+						<input
+							readonly
+							disabled
+							x-ref="username"
+							type="text"
+							name="username"
+							id="username"
+							class="mb-2 input-text"
+							value="<%= user.username %>"
+							placeholder="Masukkan Username" />
+						<template x-for="error in getErrors('username')" x-key="error">
+							<p class="mt-1 text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="nim" class="block mb-2 text-sm font-medium">NIM</label>
+						<input
+							readonly
+							disabled
+							x-ref="nim"
+							type="text"
+							name="nim"
+							id="nim"
+							class="mb-2 input-text"
+							placeholder="Masukkan NIM"
+							value="<%= user.nim %>" />
+						<template x-for="error in getErrors('nim')" x-key="error">
+							<p class="mt-1 text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="telepon" class="block mb-2 text-sm font-medium">Telepon</label>
+						<input
+							required
+							x-ref="telepon"
+							type="telepon"
+							name="telepon"
+							id="telepon"
+							class="mb-2 input-text"
+							placeholder="+62 "
+							value="<%= user.telepon %>" />
+						<template x-for="error in getErrors('telepon')" x-key="error">
+							<p class="mt-1 text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="mb-4">
+						<label for="password" class="block mb-2 text-sm font-medium">Password</label>
+						<input
+							required
+							x-ref="password"
+							type="password"
+							name="password"
+							id="password"
+							class="mb-2 input-text"
+							placeholder="Masukkan password" />
+						<template x-for="error in getErrors('password')" x-key="error">
+							<p class="mt-1 text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<!-- new password -->
+					<div class="mb-6">
+						<label for="newPassword" class="block mb-2 text-sm font-medium">New Password</label>
+						<input
+							x-ref="newPassword"
+							type="password"
+							name="newPassword"
+							id="newPassword"
+							class="mb-2 input-text"
+							placeholder="Masukkan password baru" />
+						<template x-for="error in getErrors('newPassword')" x-key="error">
+							<p class="mt-1 text-sm text-red-500" x-text="error.msg"></p>
+						</template>
+					</div>
+
+					<div class="flex justify-end space-x-2">
+						<button type="submit" class="button primary">Submit</button>
+						<button type="reset" class="button secondary">Reset</button>
+					</div>
+				</form>
+			</div>
+		</main>
+
+		<!-- Copyright -->
+		<%- include('../partials/footer') %>
+	</body>
+</html>
